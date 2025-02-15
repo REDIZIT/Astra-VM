@@ -34,5 +34,7 @@ public enum OpCode : byte
     PtrSet,
     PtrShift,
     
+    FieldAccess,
+    
     Last
 }

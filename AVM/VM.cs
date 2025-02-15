@@ -45,6 +45,8 @@ public partial class VM
         methods[(byte)OpCode.PtrGet] = PtrGet;
         methods[(byte)OpCode.PtrSet] = PtrSet;
         methods[(byte)OpCode.PtrShift] = PtrShift;
+        
+        methods[(byte)OpCode.FieldAccess] = FieldAccess;
     }
     
     public void Load(byte[] byteCode)
@@ -147,30 +149,68 @@ public partial class VM
     {
         byte dstType = Next();
 
-        if (dstType != 1) throw new Exception("Not supported");
-
-        int dstRbpOffset = NextInt();
-        int dstAddress = memory.ToAbs(dstRbpOffset);
+        int dstAddress;
+        
+        if (dstType == 1)
+        {
+            // Dst is pointer
+            dstAddress = NextAddress();
+        }
+        else if (dstType == 2)
+        {
+            // Dst is address behind pointer
+            dstAddress = NextAddress();
+            dstAddress = memory.ReadInt(dstAddress);
+        }
+        else
+        {
+            throw new Exception($"Invalid mov dst type {dstType}");
+        }
+        
 
         byte srcType = Next();
 
         if (srcType == 1)
         {
-            int srcRbpOffset = NextInt();
-            int srcAddress = memory.ToAbs(srcRbpOffset);
+            // src is rbp offset
+            int srcAddress = NextAddress();
 
             byte sizeInBytes = Next();
 
             Mov_Stack_to_Stack(dstAddress, srcAddress, sizeInBytes);
         }
-        else
+        else if (srcType == 2)
         {
-            if (srcType != 2) throw new Exception("Not supported");
-
+            // src is stack address
+            
             byte srcSizeInBytes = Next();
             byte[] srcValue = Next(srcSizeInBytes);
 
             memory.Write(dstAddress, srcValue);
+        }
+        else if (srcType == 3)
+        {
+            // src is value behind stack address
+            int srcAddress = NextAddress();
+            byte srcSizeInBytes = Next();
+
+            byte[] srcValue = memory.Read(srcAddress, srcSizeInBytes);
+
+            memory.Write(dstAddress, srcValue);
+        }
+        else if (srcType == 4)
+        {
+            // src is abs address
+            int srcAddress = NextInt();
+            byte srcSizeInBytes = Next();
+
+            byte[] srcValue = memory.Read(srcAddress, srcSizeInBytes);
+
+            memory.Write(dstAddress, srcValue);
+        }
+        else
+        {
+            throw new Exception($"Invalid mov src type {srcType}");
         }
     }
 
@@ -185,6 +225,32 @@ public partial class VM
         memory.Write(dstAddress, srcValue);
     }
 
+    private void FieldAccess()
+    {
+        int baseOffset = NextInt();
+        int fieldOffset = NextInt();
+        byte fieldValueSize = Next();
+        byte isGetter = Next();
+        int resultAddress = NextAddress();
+
+        // fieldPointer is pointing to valid address of ref-type.field
+        int fieldPointer = memory.ToAbs(baseOffset) + fieldOffset;
+        
+        // If we don't need a pointer (like setter), but want to get a value (like getter)
+        if (isGetter > 0)
+        {
+            // Depoint rbx to get actual field value due to getter
+            byte[] value = memory.Read(fieldPointer, fieldValueSize);
+            
+            // Put in result a value (not fixed size) of field (getter)
+            memory.Write(resultAddress, value);
+        }
+        else
+        {
+            // Put in result a pointer (fixed size) to field (setter)
+            memory.WriteInt(resultAddress, fieldPointer);
+        }   
+    }
     
     
     private void Exit()
