@@ -21,6 +21,8 @@ public class VM
         methods[(byte)OpCode.Return] = Return;
         methods[(byte)OpCode.Exit] = Exit;
         methods[(byte)OpCode.Mov] = Mov;
+        
+        methods[(byte)OpCode.Add] = Add;
     }
     
     public void Load(byte[] byteCode)
@@ -31,6 +33,8 @@ public class VM
 
     public void Execute()
     {
+        string stackDumpFile = "../../../dumps/stack.raw";
+        
         Stopwatch w = Stopwatch.StartNew();
         
         while (current < byteCode.Length)
@@ -45,11 +49,16 @@ public class VM
             }
             else
             {
-                throw new Exception($"Invalid opcode {opCodeByte} at pos {current}");
+                throw new Exception($"Invalid opcode {opCodeByte} at pos {current - 1}");
             }
+            
+            memory.Dump(stackDumpFile);
         }
         
         Console.WriteLine($"Successful executed in {w.ElapsedMilliseconds} ms with exit code {memory.ReadInt(0)}");
+        
+        
+        memory.Dump(stackDumpFile);
     }
     
     private byte Next()
@@ -79,8 +88,11 @@ public class VM
     private void Allocate_Stack()
     {
         byte bytesToAllocate = Next();
-        int pointer = memory.Allocate_Stack(bytesToAllocate);
-        memory.WriteFrom(pointer, byteCode, current, bytesToAllocate);
+        
+        int address = memory.Allocate_Stack(bytesToAllocate);
+        byte[] defaultValue = byteCode[current..(current + bytesToAllocate)];
+        // memory.Write(address, defaultValue);
+        
         current += bytesToAllocate;
     }
 
@@ -112,15 +124,6 @@ public class VM
             throw new Exception($"Return opcode at {current - 1} does not return to call opcode, but points to {byteCode[callOpCodePointer]} at {callOpCodePointer}. Seems, you have invalid stack. Make sure, that Return opcode will pop pointer to Call opcode.");
         }
 
-        int returnValue = NextInt();
-        if (returnValue != 0)
-        {
-            int dstRbp = NextInt();
-            int srcRbp = NextInt();
-
-            Mov_RBP_to_RBP(dstRbp, srcRbp, 4);
-        }
-        
         current += callOpCodePointer + 1 + sizeof(int); // + 1 (OpCode.Call) + int (pointer to label)
     }
 
@@ -131,14 +134,14 @@ public class VM
         if (dstType != 1) throw new Exception("Not supported");
 
         int dstRbpOffset = NextInt();
-        int dstAddress = memory.basePointer - dstRbpOffset;
+        int dstAddress = memory.ToAbs(dstRbpOffset);
 
         byte srcType = Next();
 
         if (srcType == 1)
         {
             int srcRbpOffset = NextInt();
-            int srcAddress = memory.basePointer - srcRbpOffset;
+            int srcAddress = memory.ToAbs(srcRbpOffset);
 
             byte sizeInBytes = Next();
 
@@ -157,7 +160,7 @@ public class VM
 
     private void Mov_RBP_to_RBP(int dstRbpOffset, int srcRbpOffset, byte sizeInBytes)
     {
-        Mov_Stack_to_Stack(memory.basePointer - dstRbpOffset, memory.basePointer - srcRbpOffset, sizeInBytes);
+        Mov_Stack_to_Stack(memory.ToAbs(dstRbpOffset), memory.ToAbs(srcRbpOffset), sizeInBytes);
     }
     private void Mov_Stack_to_Stack(int dstAddress, int srcAddress, byte sizeInBytes)
     {
@@ -166,6 +169,56 @@ public class VM
         memory.Write(dstAddress, srcValue);
     }
 
+    private void Add()
+    {
+        int aRbpOffset = NextInt();
+        int bRbpOffset = NextInt();
+        int resultRbpOffset = NextInt();
+
+        byte sizeInBytes = Next();
+
+        int aAddress = memory.ToAbs(aRbpOffset);
+        int bAddress = memory.ToAbs(bRbpOffset);
+        int resultAddress = memory.ToAbs(resultRbpOffset);
+        
+        if (sizeInBytes == 1) Add_Bytes(aAddress, bAddress, resultAddress);
+        else if (sizeInBytes == 2) Add_Shorts(aAddress, bAddress, resultAddress);
+        else if (sizeInBytes == 4) Add_Ints(aAddress, bAddress, resultAddress);
+        else if (sizeInBytes == 8) Add_Longs(aAddress, bAddress, resultAddress);
+        else throw new Exception($"Bad Add's sizeInBytes = {sizeInBytes}");
+    }
+
+    private void Add_Bytes(int aAddress, int bAddress, int resultAddress)
+    {
+        byte a = memory.Read(aAddress);
+        byte b = memory.Read(bAddress);
+        byte result = (byte)(a + b);
+        memory.Write(resultAddress, result);
+    }
+    private void Add_Shorts(int aAddress, int bAddress, int resultAddress)
+    {
+        short a = memory.ReadShort(aAddress);
+        short b = memory.ReadShort(bAddress);
+        short result = (short)(a + b);
+        memory.Write(resultAddress, BitConverter.GetBytes(result));
+    }
+    private void Add_Ints(int aAddress, int bAddress, int resultAddress)
+    {
+        int a = memory.ReadInt(aAddress);
+        int b = memory.ReadInt(bAddress);
+        int result = a + b;
+        memory.Write(resultAddress, BitConverter.GetBytes(result));
+    }
+    private void Add_Longs(int aAddress, int bAddress, int resultAddress)
+    {
+        long a = memory.ReadLong(aAddress);
+        long b = memory.ReadLong(bAddress);
+        long result = a + b;
+        memory.Write(resultAddress, BitConverter.GetBytes(result));
+    }
+
+    
+    
     private void Exit()
     {
         current = byteCode.Length;

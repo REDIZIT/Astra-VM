@@ -12,5 +12,14 @@ public enum OpCode : byte
     Exit,
     Mov,
     
+    Add,
+    Sub,
+    Mul,
+    Div,
+    LeftBitShift,
+    RightBitShift,
+    BitAnd,
+    BitOr,
+    
     Last
 }
