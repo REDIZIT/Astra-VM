@@ -16,15 +16,13 @@ public class Memory
     public Memory()
     {
         stack = new byte[1024];
-        // stackPointer = stack.Length;
-        // basePointer = stackPointer;
     }
 
     public int Allocate_Stack(int bytesToAllocate)
     {
         int pointer = stackPointer;
 
-        logger.AppendLine($"Allocate stack {stackPointer}..{stackPointer + bytesToAllocate}");
+        // logger.AppendLine($"Allocate stack {stackPointer}..{stackPointer + bytesToAllocate}");
             
         stackPointer += bytesToAllocate;
         return pointer;
@@ -32,13 +30,26 @@ public class Memory
 
     public void Write(int address, byte value)
     {
-        logger.AppendLine($"Write at {address}");
+        // logger.AppendLine($"Write at {address}");
         
         stack[address] = value;
     }
+
+    public void WriteShort(int address, short value)
+    {
+        Write(address, BitConverter.GetBytes(value));
+    }
+    public void WriteInt(int address, int value)
+    {
+        Write(address, BitConverter.GetBytes(value));
+    }
+    public void WriteLong(int address, long value)
+    {
+        Write(address, BitConverter.GetBytes(value));
+    }
     public void Write(int address, byte[] value)
     {
-        logger.AppendLine($"Write {address}..{address + value.Length} ");
+        // logger.AppendLine($"Write {address}..{address + value.Length} ");
         
         for (int i = 0; i < value.Length; i++)
         {
@@ -75,7 +86,7 @@ public class Memory
 
     public void Push(byte[] bytes)
     {
-        logger.AppendLine($"Push stack {stackPointer}..{stackPointer + bytes.Length}");
+        // logger.AppendLine($"Push stack {stackPointer}..{stackPointer + bytes.Length}");
         
         Write(stackPointer, bytes);
         stackPointer += bytes.Length;
@@ -83,7 +94,7 @@ public class Memory
 
     public byte[] Pop(byte bytesToPop)
     {
-        logger.AppendLine($"Pop stack {stackPointer - bytesToPop}..{stackPointer}");
+        // logger.AppendLine($"Pop stack {stackPointer - bytesToPop}..{stackPointer}");
         
         stackPointer -= bytesToPop;
         return Read(stackPointer, bytesToPop);

@@ -2,11 +2,11 @@
 
 namespace AVM;
 
-public class VM
+public partial class VM
 {
     private byte[] byteCode;
     private int current;
-    private Memory memory = new();
+    public Memory memory = new();
 
     private Action[] methods;
 
@@ -23,6 +23,17 @@ public class VM
         methods[(byte)OpCode.Mov] = Mov;
         
         methods[(byte)OpCode.Add] = Add;
+        methods[(byte)OpCode.Sub] = Sub;
+        methods[(byte)OpCode.Mul] = Mul;
+        methods[(byte)OpCode.Div] = Div;
+        
+        methods[(byte)OpCode.Negate] = Negate;
+        
+        methods[(byte)OpCode.ToPtr_ValueType] = ToPtr_ValueType;
+        methods[(byte)OpCode.ToPtr_RefType] = ToPtr_RefType;
+        methods[(byte)OpCode.PtrGet] = PtrGet;
+        methods[(byte)OpCode.PtrSet] = PtrSet;
+        methods[(byte)OpCode.PtrShift] = PtrShift;
     }
     
     public void Load(byte[] byteCode)
@@ -33,7 +44,7 @@ public class VM
 
     public void Execute()
     {
-        string stackDumpFile = "../../../dumps/stack.raw";
+        string stackDumpFile = "dumps/stack.raw";
         
         Stopwatch w = Stopwatch.StartNew();
         
@@ -52,13 +63,13 @@ public class VM
                 throw new Exception($"Invalid opcode {opCodeByte} at pos {current - 1}");
             }
             
-            memory.Dump(stackDumpFile);
+            // memory.Dump(stackDumpFile);
         }
         
         Console.WriteLine($"Successful executed in {w.ElapsedMilliseconds} ms with exit code {memory.ReadInt(0)}");
         
         
-        memory.Dump(stackDumpFile);
+        // memory.Dump(stackDumpFile);
     }
     
     private byte Next()
@@ -167,54 +178,6 @@ public class VM
         byte[] srcValue = memory.Read(srcAddress, sizeInBytes);
         
         memory.Write(dstAddress, srcValue);
-    }
-
-    private void Add()
-    {
-        int aRbpOffset = NextInt();
-        int bRbpOffset = NextInt();
-        int resultRbpOffset = NextInt();
-
-        byte sizeInBytes = Next();
-
-        int aAddress = memory.ToAbs(aRbpOffset);
-        int bAddress = memory.ToAbs(bRbpOffset);
-        int resultAddress = memory.ToAbs(resultRbpOffset);
-        
-        if (sizeInBytes == 1) Add_Bytes(aAddress, bAddress, resultAddress);
-        else if (sizeInBytes == 2) Add_Shorts(aAddress, bAddress, resultAddress);
-        else if (sizeInBytes == 4) Add_Ints(aAddress, bAddress, resultAddress);
-        else if (sizeInBytes == 8) Add_Longs(aAddress, bAddress, resultAddress);
-        else throw new Exception($"Bad Add's sizeInBytes = {sizeInBytes}");
-    }
-
-    private void Add_Bytes(int aAddress, int bAddress, int resultAddress)
-    {
-        byte a = memory.Read(aAddress);
-        byte b = memory.Read(bAddress);
-        byte result = (byte)(a + b);
-        memory.Write(resultAddress, result);
-    }
-    private void Add_Shorts(int aAddress, int bAddress, int resultAddress)
-    {
-        short a = memory.ReadShort(aAddress);
-        short b = memory.ReadShort(bAddress);
-        short result = (short)(a + b);
-        memory.Write(resultAddress, BitConverter.GetBytes(result));
-    }
-    private void Add_Ints(int aAddress, int bAddress, int resultAddress)
-    {
-        int a = memory.ReadInt(aAddress);
-        int b = memory.ReadInt(bAddress);
-        int result = a + b;
-        memory.Write(resultAddress, BitConverter.GetBytes(result));
-    }
-    private void Add_Longs(int aAddress, int bAddress, int resultAddress)
-    {
-        long a = memory.ReadLong(aAddress);
-        long b = memory.ReadLong(bAddress);
-        long result = a + b;
-        memory.Write(resultAddress, BitConverter.GetBytes(result));
     }
 
     

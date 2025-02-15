@@ -6,8 +6,8 @@ public static class Program
     {
         VM vm = new();
 
-        // byte[] byteCode = File.ReadAllBytes("../../../docs/example.ab");
-        byte[] byteCode = File.ReadAllBytes("C:/Users/REDIZIT/Documents/GitHub/AstraOS/main/vscode project/build/project.nasm");
+        string filepath = "C:/Users/REDIZIT/Documents/GitHub/AstraOS/main/vscode project/build/project.nasm";
+        byte[] byteCode = File.ReadAllBytes(filepath);
 
         vm.Load(byteCode);
         vm.Execute();

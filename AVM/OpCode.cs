@@ -21,5 +21,13 @@ public enum OpCode : byte
     BitAnd,
     BitOr,
     
+    Negate,
+
+    ToPtr_ValueType,
+    ToPtr_RefType,
+    PtrGet,
+    PtrSet,
+    PtrShift,
+    
     Last
 }
