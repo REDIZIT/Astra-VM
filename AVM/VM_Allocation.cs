@@ -71,4 +71,19 @@ public partial class VM
         int bytesToDeallocate = NextInt();
         memory.Deallocate_Stack(bytesToDeallocate);
     }
+
+    private void AllocateRSPSaver()
+    {
+        memory.Push(BitConverter.GetBytes(memory.stackPointer));
+    }
+    private void RestoreRSPSaver()
+    {
+        int savedRSP = NextInt();
+        memory.stackPointer = -savedRSP; // restore negative rsp
+    }
+    private void DeallocateRSPSaver()
+    {
+        byte[] bytes = memory.Pop(sizeof(int));
+        memory.stackPointer = BitConverter.ToInt32(bytes);
+    }
 }

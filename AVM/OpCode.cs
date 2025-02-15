@@ -36,5 +36,9 @@ public enum OpCode : byte
     
     FieldAccess,
     
+    AllocateRSPSaver,
+    RestoreRSPSaver,
+    DeallocateRSPSaver,
+    
     Last
 }

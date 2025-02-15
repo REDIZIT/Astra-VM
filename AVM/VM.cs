@@ -47,6 +47,10 @@ public partial class VM
         methods[(byte)OpCode.PtrShift] = PtrShift;
         
         methods[(byte)OpCode.FieldAccess] = FieldAccess;
+        
+        methods[(byte)OpCode.AllocateRSPSaver] = AllocateRSPSaver;
+        methods[(byte)OpCode.RestoreRSPSaver] = RestoreRSPSaver;
+        methods[(byte)OpCode.DeallocateRSPSaver] = DeallocateRSPSaver;
     }
     
     public void Load(byte[] byteCode)

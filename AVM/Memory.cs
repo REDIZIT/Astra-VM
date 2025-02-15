@@ -46,6 +46,10 @@ public class Memory
     public void Write(int address, byte value)
     {
         // logger.AppendLine($"Write at {address}");
+        if (address < 0 || address >= stack.Length)
+        {
+            throw new Exception($"Out of stack bounds {address}");
+        }
         
         stack[address] = value;
     }
@@ -65,6 +69,10 @@ public class Memory
     public void Write(int address, byte[] value)
     {
         // logger.AppendLine($"Write {address}..{address + value.Length} ");
+        if (address < 0 || address + value.Length >= stack.Length)
+        {
+            throw new Exception($"Out of stack bounds {address}");
+        }
         
         for (int i = 0; i < value.Length; i++)
         {
