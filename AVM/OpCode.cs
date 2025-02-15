@@ -9,6 +9,8 @@ public enum OpCode : byte
     FunctionEpilogue,
     Call,
     Return,
+    Jump,
+    JumpIfFalse,
     Exit,
     Mov,
     
@@ -20,6 +22,7 @@ public enum OpCode : byte
     RightBitShift,
     BitAnd,
     BitOr,
+    Compare,
     
     Negate,
 

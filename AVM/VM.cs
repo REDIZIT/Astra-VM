@@ -10,6 +10,8 @@ public partial class VM
 
     private Action[] methods;
 
+    private List<OpCode> completedOpCodes = new();
+
     public VM()
     {
         methods = new Action[(byte)OpCode.Last];
@@ -19,6 +21,8 @@ public partial class VM
         methods[(byte)OpCode.FunctionEpilogue] = FunctionEpilogue;
         methods[(byte)OpCode.Call] = Call;
         methods[(byte)OpCode.Return] = Return;
+        methods[(byte)OpCode.Jump] = Jump;
+        methods[(byte)OpCode.JumpIfFalse] = JumpIfFalse;
         methods[(byte)OpCode.Exit] = Exit;
         methods[(byte)OpCode.Mov] = Mov;
         
@@ -26,6 +30,7 @@ public partial class VM
         methods[(byte)OpCode.Sub] = Sub;
         methods[(byte)OpCode.Mul] = Mul;
         methods[(byte)OpCode.Div] = Div;
+        methods[(byte)OpCode.Compare] = Compare;
         
         methods[(byte)OpCode.Negate] = Negate;
         
@@ -57,6 +62,7 @@ public partial class VM
             if (opCodeByte > 0 && opCodeByte < methods.Length && methods[opCodeByte] != null)
             {
                 methods[opCodeByte]();
+                completedOpCodes.Add(opCode);
             }
             else
             {
@@ -82,6 +88,11 @@ public partial class VM
     private int NextInt()
     {
         return BitConverter.ToInt32(Next(sizeof(int)));
+    }
+
+    private int NextAddress()
+    {
+        return memory.ToAbs(NextInt());
     }
 
     private byte[] Next(byte bytesCount)
@@ -135,7 +146,7 @@ public partial class VM
             throw new Exception($"Return opcode at {current - 1} does not return to call opcode, but points to {byteCode[callOpCodePointer]} at {callOpCodePointer}. Seems, you have invalid stack. Make sure, that Return opcode will pop pointer to Call opcode.");
         }
 
-        current += callOpCodePointer + 1 + sizeof(int); // + 1 (OpCode.Call) + int (pointer to label)
+        current = callOpCodePointer + 1 + sizeof(int); // + 1 (OpCode.Call) + int (pointer to label)
     }
 
     private void Mov()
