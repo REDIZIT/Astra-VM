@@ -5,6 +5,8 @@ public enum OpCode : byte
     Invalid,
     
     Allocate_Stack,
+    Allocate_Heap,
+    Deallocate_Stack,
     FunctionPrologue,
     FunctionEpilogue,
     Call,

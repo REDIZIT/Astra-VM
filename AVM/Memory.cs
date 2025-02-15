@@ -6,8 +6,10 @@ public class Memory
 {
     public int basePointer;
     public int stackPointer;
+
+    private int heapPointer;
     
-    private byte[] stack;
+    private byte[] stack, heap;
 
     private StringBuilder logger = new();
 
@@ -16,6 +18,7 @@ public class Memory
     public Memory()
     {
         stack = new byte[1024];
+        heap = new byte[1024];
     }
 
     public int Allocate_Stack(int bytesToAllocate)
@@ -26,6 +29,18 @@ public class Memory
             
         stackPointer += bytesToAllocate;
         return pointer;
+    }
+
+    public int Allocate_Heap(int bytesToAllocate)
+    {
+        int pointer = heapPointer;
+        heapPointer += bytesToAllocate;
+        return pointer;
+    }
+
+    public void Deallocate_Stack(int bytesToDeallocate)
+    {
+        stackPointer -= bytesToDeallocate;
     }
 
     public void Write(int address, byte value)

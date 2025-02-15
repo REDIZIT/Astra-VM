@@ -17,6 +17,8 @@ public partial class VM
         methods = new Action[(byte)OpCode.Last];
 
         methods[(byte)OpCode.Allocate_Stack] = Allocate_Stack;
+        methods[(byte)OpCode.Allocate_Heap] = Allocate_Heap;
+        methods[(byte)OpCode.Deallocate_Stack] = Deallocate_Stack;
         methods[(byte)OpCode.FunctionPrologue] = FunctionPrologue;
         methods[(byte)OpCode.FunctionEpilogue] = FunctionEpilogue;
         methods[(byte)OpCode.Call] = Call;
@@ -30,6 +32,10 @@ public partial class VM
         methods[(byte)OpCode.Sub] = Sub;
         methods[(byte)OpCode.Mul] = Mul;
         methods[(byte)OpCode.Div] = Div;
+        methods[(byte)OpCode.LeftBitShift] = LeftBitShift;
+        methods[(byte)OpCode.RightBitShift] = RightBitShift;
+        methods[(byte)OpCode.BitAnd] = BitAnd;
+        methods[(byte)OpCode.BitOr] = BitOr;
         methods[(byte)OpCode.Compare] = Compare;
         
         methods[(byte)OpCode.Negate] = Negate;
@@ -106,18 +112,6 @@ public partial class VM
         current += bytesCount;
         return bytes;
     }
-    
-    private void Allocate_Stack()
-    {
-        byte bytesToAllocate = Next();
-        
-        int address = memory.Allocate_Stack(bytesToAllocate);
-        byte[] defaultValue = byteCode[current..(current + bytesToAllocate)];
-        // memory.Write(address, defaultValue);
-        
-        current += bytesToAllocate;
-    }
-
     private void FunctionPrologue()
     {
         memory.Push(BitConverter.GetBytes(memory.basePointer));

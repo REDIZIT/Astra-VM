@@ -18,6 +18,23 @@ public partial class VM
     {
         Math_Binary(OpCode.Div);
     }
+    private void LeftBitShift()
+    {
+        Math_Binary(OpCode.LeftBitShift);
+    }
+    private void RightBitShift()
+    {
+        Math_Binary(OpCode.RightBitShift);
+    }
+    private void BitAnd()
+    {
+        Math_Binary(OpCode.BitAnd);
+    }
+    private void BitOr()
+    {
+        Math_Binary(OpCode.BitOr);
+    }
+    
     private void Negate()
     {
         Math_Unary(OpCode.Negate);
@@ -123,6 +140,10 @@ public partial class VM
             case OpCode.Sub: return (byte)(a - b);
             case OpCode.Mul: return (byte)(a * b);
             case OpCode.Div: return (byte)(a / b);
+            case OpCode.LeftBitShift: return (byte)(a << b);
+            case OpCode.RightBitShift: return (byte)(a >> b);
+            case OpCode.BitAnd: return (byte)(a & b);
+            case OpCode.BitOr: return (byte)(a | b);
             default: throw new Exception($"Invalid math opcode {op}");
         }
     }
@@ -134,6 +155,10 @@ public partial class VM
             case OpCode.Sub: return (short)(a - b);
             case OpCode.Mul: return (short)(a * b);
             case OpCode.Div: return (short)(a / b);
+            case OpCode.LeftBitShift: return (short)(a << b);
+            case OpCode.RightBitShift: return (short)(a >> b);
+            case OpCode.BitAnd: return (short)(a & b);
+            case OpCode.BitOr: return (short)(a | b);
             default: throw new Exception($"Invalid math opcode {op}");
         }
     }
@@ -145,6 +170,10 @@ public partial class VM
             case OpCode.Sub: return a - b;
             case OpCode.Mul: return a * b;
             case OpCode.Div: return a / b;
+            case OpCode.LeftBitShift: return a << b;
+            case OpCode.RightBitShift: return a >> b;
+            case OpCode.BitAnd: return a & b;
+            case OpCode.BitOr: return a | b;
             default: throw new Exception($"Invalid math opcode {op}");
         }
     }
@@ -156,6 +185,10 @@ public partial class VM
             case OpCode.Sub: return a - b;
             case OpCode.Mul: return a * b;
             case OpCode.Div: return a / b;
+            case OpCode.LeftBitShift: return a << (int)b;
+            case OpCode.RightBitShift: return a >> (int)b;
+            case OpCode.BitAnd: return a & b;
+            case OpCode.BitOr: return a | b;
             default: throw new Exception($"Invalid binary math opcode {op}");
         }
     }
