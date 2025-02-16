@@ -40,5 +40,7 @@ public enum OpCode : byte
     RestoreRSPSaver,
     DeallocateRSPSaver,
     
+    Cast,
+    
     Last
 }

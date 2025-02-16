@@ -51,6 +51,8 @@ public partial class VM
         methods[(byte)OpCode.AllocateRSPSaver] = AllocateRSPSaver;
         methods[(byte)OpCode.RestoreRSPSaver] = RestoreRSPSaver;
         methods[(byte)OpCode.DeallocateRSPSaver] = DeallocateRSPSaver;
+        
+        methods[(byte)OpCode.Cast] = Cast;
     }
     
     public void Load(byte[] byteCode)

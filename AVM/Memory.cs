@@ -11,7 +11,7 @@ public class Memory
     
     private byte[] stack, heap;
 
-    private StringBuilder logger = new();
+    private MemoryLogger logger;
 
     public string Log => logger.ToString();
 
@@ -19,14 +19,16 @@ public class Memory
     {
         stack = new byte[1024];
         heap = new byte[1024];
+
+        logger = new(this);
     }
 
     public int Allocate_Stack(int bytesToAllocate)
     {
         int pointer = stackPointer;
 
-        // logger.AppendLine($"Allocate stack {stackPointer}..{stackPointer + bytesToAllocate}");
-            
+        logger.Log_Allocate(bytesToAllocate);
+        
         stackPointer += bytesToAllocate;
         return pointer;
     }
@@ -45,11 +47,12 @@ public class Memory
 
     public void Write(int address, byte value)
     {
-        // logger.AppendLine($"Write at {address}");
         if (address < 0 || address >= stack.Length)
         {
             throw new Exception($"Out of stack bounds {address}");
         }
+
+        logger.Log_Write(address, value);
         
         stack[address] = value;
     }
@@ -66,13 +69,14 @@ public class Memory
     {
         Write(address, BitConverter.GetBytes(value));
     }
-    public void Write(int address, byte[] value)
+    public void Write(int address, byte[] value, bool noLogs = false)
     {
-        // logger.AppendLine($"Write {address}..{address + value.Length} ");
         if (address < 0 || address + value.Length >= stack.Length)
         {
             throw new Exception($"Out of stack bounds {address}");
         }
+        
+        if (!noLogs) logger.Log_Write(address, value);
         
         for (int i = 0; i < value.Length; i++)
         {
@@ -109,15 +113,15 @@ public class Memory
 
     public void Push(byte[] bytes)
     {
-        // logger.AppendLine($"Push stack {stackPointer}..{stackPointer + bytes.Length}");
+        logger.Log_Push(bytes);
         
-        Write(stackPointer, bytes);
+        Write(stackPointer, bytes, true);
         stackPointer += bytes.Length;
     }
 
     public byte[] Pop(byte bytesToPop)
     {
-        // logger.AppendLine($"Pop stack {stackPointer - bytesToPop}..{stackPointer}");
+        logger.Log_Pop(bytesToPop);
         
         stackPointer -= bytesToPop;
         return Read(stackPointer, bytesToPop);
