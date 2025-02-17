@@ -12,7 +12,7 @@ public partial class VM
         
             int address = memory.Allocate_Stack(bytesToAllocate);
             byte[] defaultValue = byteCode[current..(current + bytesToAllocate)];
-            // memory.Write(address, defaultValue);
+            memory.Write(address, defaultValue);
             
             current += bytesToAllocate;
         }

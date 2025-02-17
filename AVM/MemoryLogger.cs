@@ -19,6 +19,16 @@ public class MemoryLogger
         b.AppendLine($"Allocate stack {memory.stackPointer}..{memory.stackPointer + bytesToAllocate}".PadRight(PAD) + ToString(memory.Read(memory.stackPointer, (byte)bytesToAllocate)));
     }
 
+    public void Log_AllocateHeap(int bytesToAllocate)
+    {
+        b.AppendLine($"Allocate heap {memory.heapPointer}..{memory.heapPointer + bytesToAllocate}".PadRight(PAD) + ToString(memory.Read(memory.heapPointer, (byte)bytesToAllocate)));
+    }
+    
+    public void Log_Deallocate(int bytesToDeallocate)
+    {
+        b.AppendLine($"Deallocate stack {memory.stackPointer}..{memory.stackPointer + bytesToDeallocate}".PadRight(PAD) + ToString(memory.Read(memory.stackPointer, (byte)bytesToDeallocate)));
+    }
+
     public void Log_Write(int address, byte value)
     {
         b.AppendLine($"Write at {address}:".PadRight(PAD) + ToString(memory.Read(address)) + " => " + ToString(value));

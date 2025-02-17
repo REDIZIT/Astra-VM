@@ -4,20 +4,20 @@ public partial class VM
 {
     private void ToPtr_ValueType()
     {
-        int askedRbpOffset = NextInt();
-        int resultAddress = memory.ToAbs(NextInt());
+        int askedVariableAddress = NextAddress();
+        int resultAddress = NextAddress();
 
-        int valueRbpOffset = memory.ToAbs(askedRbpOffset);
-        memory.Write(resultAddress, BitConverter.GetBytes(valueRbpOffset));
+        memory.Write(resultAddress, BitConverter.GetBytes(askedVariableAddress));
     }
     private void ToPtr_RefType()
     {
-        int askedRbpOffset = NextInt();
-        int resultAddress = memory.ToAbs(NextInt());
+        int askedVariableRbp = NextInt();
+        int askedVariableAddress = memory.ToAbs(askedVariableRbp);
+        int resultAddress = NextAddress();
 
-        int variableRbpOffset = memory.ToAbs(askedRbpOffset);
-        int valueRbpOffset = memory.ReadInt(variableRbpOffset);
-        memory.Write(resultAddress, BitConverter.GetBytes(valueRbpOffset));
+        int valueAddress = memory.ReadInt(askedVariableAddress); // depoint one more time
+        
+        memory.Write(resultAddress, BitConverter.GetBytes(valueAddress));
     }
 
     private void PtrGet()
@@ -29,9 +29,9 @@ public partial class VM
         int resultAddress = memory.ToAbs(resultRbpOffset);
         byte size = Next();
         
-        int dopointedAddress = memory.ReadInt(pointerAddress);
+        int depointedAddress = memory.ReadInt(pointerAddress);
         
-        byte[] value = memory.Read(dopointedAddress, size);
+        byte[] value = memory.Read(depointedAddress, size);
         memory.Write(resultAddress, value);
     }
     private void PtrSet()
@@ -43,10 +43,10 @@ public partial class VM
         int valueAddress = memory.ToAbs(valueRbpOffset);
         byte size = Next();
 
-        int dopointedAddress = memory.ReadInt(pointerAddress);
+        int depointedAddress = memory.ReadInt(pointerAddress);
         
         byte[] value = memory.Read(valueAddress, size);
-        memory.Write(dopointedAddress, value);
+        memory.Write(depointedAddress, value);
     }
 
     private void PtrShift()

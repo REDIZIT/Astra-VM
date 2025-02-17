@@ -11,6 +11,7 @@ public partial class VM
     private Action[] methods;
 
     private List<OpCode> completedOpCodes = new();
+    private const int COMPLETED_OPCODES_LIMIT = 1000;
 
     public VM()
     {
@@ -77,6 +78,11 @@ public partial class VM
             {
                 methods[opCodeByte]();
                 completedOpCodes.Add(opCode);
+
+                if (completedOpCodes.Count >= COMPLETED_OPCODES_LIMIT)
+                {
+                    throw new Exception($"Too many opcodes completed ({COMPLETED_OPCODES_LIMIT}). Seems, there is a infinite loop.");
+                }
             }
             else
             {
@@ -129,20 +135,20 @@ public partial class VM
     private void FunctionEpilogue()
     {
         memory.stackPointer = memory.basePointer;
-        memory.basePointer = BitConverter.ToInt32(memory.Pop(sizeof(int)));
+        memory.basePointer = memory.PopInt();
     }
 
     private void Call()
     {
-        memory.Push(BitConverter.GetBytes(current - 1));
-        
-        int opCodePointer = BitConverter.ToInt32(Next(sizeof(int)));
+        memory.PushInt(current - 1);
+
+        int opCodePointer = NextInt();
         current = opCodePointer;
     }
 
     private void Return()
     {
-        int callOpCodePointer = BitConverter.ToInt32(memory.Pop(sizeof(int)));
+        int callOpCodePointer = memory.PopInt();
         if (byteCode[callOpCodePointer] != (byte)OpCode.Call)
         {
             throw new Exception($"Return opcode at {current - 1} does not return to call opcode, but points to {byteCode[callOpCodePointer]} at {callOpCodePointer}. Seems, you have invalid stack. Make sure, that Return opcode will pop pointer to Call opcode.");
