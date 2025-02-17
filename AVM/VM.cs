@@ -245,8 +245,11 @@ public partial class VM
         byte isGetter = Next();
         int resultAddress = NextAddress();
 
+        int addressInStack = memory.ToAbs(baseOffset);
+        int addressInHeap = memory.ReadInt(addressInStack);
+
         // fieldPointer is pointing to valid address of ref-type.field
-        int fieldPointer = memory.ToAbs(baseOffset) + fieldOffset;
+        int fieldPointer = addressInHeap + fieldOffset;
         
         // If we don't need a pointer (like setter), but want to get a value (like getter)
         if (isGetter > 0)
