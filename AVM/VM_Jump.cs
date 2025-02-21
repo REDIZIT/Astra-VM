@@ -10,7 +10,7 @@ public partial class VM
 
     private void JumpIfFalse()
     {
-        int address = NextInt();
+        int jumpAddress = NextInt();
         int conditionAddress = NextAddress();
         byte size = Next();
 
@@ -26,7 +26,7 @@ public partial class VM
 
         if (isTrue == false)
         {
-            current = address;
+            current = jumpAddress;
         }
     }
 }

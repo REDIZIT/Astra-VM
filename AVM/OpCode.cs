@@ -42,5 +42,13 @@ public enum OpCode : byte
     
     Cast,
     
+    Section,
+    
     Last
+}
+
+public enum Allocate_Stack_Mode : byte
+{
+    WithDefaultValue = 0,
+    PushAlreadyAllocatedVariable = 1
 }

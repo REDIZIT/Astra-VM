@@ -54,6 +54,8 @@ public partial class VM
         methods[(byte)OpCode.DeallocateRSPSaver] = DeallocateRSPSaver;
         
         methods[(byte)OpCode.Cast] = Cast;
+        
+        methods[(byte)OpCode.Section] = Section;
     }
     
     public void Load(byte[] byteCode)
@@ -112,7 +114,8 @@ public partial class VM
 
     private int NextAddress()
     {
-        return memory.ToAbs(NextInt());
+        int rbpOffset = NextInt();
+        return memory.ToAbs(rbpOffset);
     }
 
     private byte[] Next(byte bytesCount)
@@ -128,7 +131,7 @@ public partial class VM
     }
     private void FunctionPrologue()
     {
-        memory.Push(BitConverter.GetBytes(memory.basePointer));
+        memory.PushInt(memory.basePointer);
         memory.basePointer = memory.stackPointer;
     }
     

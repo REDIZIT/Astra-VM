@@ -9,20 +9,20 @@ public class Memory
     public int heapPointer;
     
     public readonly int stackSize = 512;
-    
-    private byte[] bytes;
+
+    private List<MemoryChunk> chunks = new();
     private MemoryLogger logger;
 
     public string Log => logger.ToString();
 
     public Memory()
     {
-        bytes = new byte[1024];
+        logger = new(this);
+        
+        chunks.Add(MemoryChunk.Regular(0, 1024, logger));
 
         basePointer = stackPointer = 0;
         heapPointer = stackSize;
-
-        logger = new(this);
     }
 
     public int Allocate_Stack(int bytesToAllocate)
@@ -57,14 +57,8 @@ public class Memory
 
     public void Write(int address, byte value)
     {
-        if (address < 0 || address >= bytes.Length)
-        {
-            throw new Exception($"Write at {address} out of memory bounds ({bytes.Length})");
-        }
-
-        logger.Log_Write(address, value);
-        
-        bytes[address] = value;
+        MemoryChunk chunk = GetChunk(address);
+        chunk.Write(chunk.ToLocal(address), value);
     }
 
     public void WriteShort(int address, short value)
@@ -80,54 +74,36 @@ public class Memory
         Write(address, BitConverter.GetBytes(value));
     }
     public void Write(int address, byte[] value, bool noLogs = false)
-    {
-        if (address < 0 || address + value.Length >= bytes.Length)
-        {
-            throw new Exception($"Write at {address}..{address + value.Length} out of memory bounds ({bytes.Length})");
-        }
-        
-        if (!noLogs) logger.Log_Write(address, value);
-        
-        for (int i = 0; i < value.Length; i++)
-        {
-            bytes[address + i] = value[i];
-        }
+    { 
+        MemoryChunk chunk = GetChunk(address);
+        chunk.Write(chunk.ToLocal(address), value, noLogs);
     }
 
     public byte Read(int address)
     {
-        if (address < 0 || address >= bytes.Length)
-        {
-            throw new Exception($"Read at {address} out of memory bounds ({bytes.Length})");
-        }
-        return bytes[address];
+        MemoryChunk chunk = GetChunk(address);
+        return chunk.Read(chunk.ToLocal(address));
     }
     public short ReadShort(int address)
     {
-        return BitConverter.ToInt16(bytes, address);
+        MemoryChunk chunk = GetChunk(address);
+        return chunk.ReadShort(chunk.ToLocal(address));
     }
     public int ReadInt(int address)
     {
-        return BitConverter.ToInt32(bytes, address);
+        MemoryChunk chunk = GetChunk(address);
+        return chunk.ReadInt(chunk.ToLocal(address));
     }
     public long ReadLong(int address)
     {
-        return BitConverter.ToInt64(bytes, address);
+        MemoryChunk chunk = GetChunk(address);
+        return chunk.ReadLong(chunk.ToLocal(address));
     }
 
     public byte[] Read(int address, byte sizeInBytes)
     {
-        if (address < 0 || address + sizeInBytes >= bytes.Length)
-        {
-            throw new Exception($"Read at {address}..{address + sizeInBytes} out of memory bounds ({bytes.Length})");
-        }
-        
-        byte[] value = new byte[sizeInBytes];
-        for (int i = 0; i < sizeInBytes; i++)
-        {
-            value[i] = bytes[address + i];
-        }
-        return value;
+        MemoryChunk chunk = GetChunk(address);
+        return chunk.Read(chunk.ToLocal(address), sizeInBytes);
     }
 
     public void PushInt(int value)
@@ -157,11 +133,31 @@ public class Memory
 
     public int ToAbs(int rbpOffset)
     {
-        return basePointer - rbpOffset;
+        return basePointer + rbpOffset;
     }
 
-    public void Dump(string filepath)
+    // public void Dump(string filepath)
+    // {
+    //     File.WriteAllBytes(filepath, bytes);
+    // }
+
+    private MemoryChunk GetChunk(int address)
     {
-        File.WriteAllBytes(filepath, bytes);
+        foreach (MemoryChunk chunk in chunks)
+        {
+            if (chunk.address <= address && address < chunk.address + chunk.size)
+            {
+                return chunk;
+            }
+        }
+
+        if (0xB8000 <= address && address < 0xB8000 + 80 * 25 * 2)
+        {
+            MemoryChunk chunk = MemoryChunk.VGA(logger);
+            chunks.Add(chunk);
+            return chunk;
+        }
+
+        throw new Exception($"Memory chunk was not found for address {address}");
     }
 }

@@ -74,16 +74,23 @@ public partial class VM
 
     private void AllocateRSPSaver()
     {
-        memory.Push(BitConverter.GetBytes(memory.stackPointer));
+        // memory.PushInt(memory.stackPointer);
+        
+        memory.PushInt(memory.basePointer);
+        memory.basePointer = memory.stackPointer;
     }
     private void RestoreRSPSaver()
     {
-        int savedRSP = NextInt();
-        memory.stackPointer = -savedRSP; // restore negative rsp
+        // int savedRSP = NextInt();
+        // memory.stackPointer = -savedRSP; // restore negative rsp
+        
+        memory.stackPointer = memory.basePointer;
     }
     private void DeallocateRSPSaver()
     {
-        byte[] bytes = memory.Pop(sizeof(int));
-        memory.stackPointer = BitConverter.ToInt32(bytes);
+        // memory.stackPointer = memory.PopInt();
+        
+        memory.stackPointer = memory.basePointer;
+        memory.basePointer = memory.PopInt();
     }
 }
