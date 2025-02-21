@@ -44,6 +44,8 @@ public enum OpCode : byte
     
     Section,
     
+    VMCommand,
+    
     Last
 }
 
@@ -51,4 +53,9 @@ public enum Allocate_Stack_Mode : byte
 {
     WithDefaultValue = 0,
     PushAlreadyAllocatedVariable = 1
+}
+
+public enum VMCommand_Cmd : byte
+{
+    Print,
 }

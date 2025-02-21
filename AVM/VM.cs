@@ -1,9 +1,12 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 
 namespace AVM;
 
 public partial class VM
 {
+    public int exitCode;
+    
     private byte[] byteCode;
     private int current;
     public Memory memory = new();
@@ -17,45 +20,16 @@ public partial class VM
     {
         methods = new Action[(byte)OpCode.Last];
 
-        methods[(byte)OpCode.Allocate_Stack] = Allocate_Stack;
-        methods[(byte)OpCode.Allocate_Heap] = Allocate_Heap;
-        methods[(byte)OpCode.Deallocate_Stack] = Deallocate_Stack;
-        methods[(byte)OpCode.FunctionPrologue] = FunctionPrologue;
-        methods[(byte)OpCode.FunctionEpilogue] = FunctionEpilogue;
-        methods[(byte)OpCode.Call] = Call;
-        methods[(byte)OpCode.Return] = Return;
-        methods[(byte)OpCode.Jump] = Jump;
-        methods[(byte)OpCode.JumpIfFalse] = JumpIfFalse;
-        methods[(byte)OpCode.Exit] = Exit;
-        methods[(byte)OpCode.Mov] = Mov;
-        
-        methods[(byte)OpCode.Add] = Add;
-        methods[(byte)OpCode.Sub] = Sub;
-        methods[(byte)OpCode.Mul] = Mul;
-        methods[(byte)OpCode.Div] = Div;
-        methods[(byte)OpCode.LeftBitShift] = LeftBitShift;
-        methods[(byte)OpCode.RightBitShift] = RightBitShift;
-        methods[(byte)OpCode.BitAnd] = BitAnd;
-        methods[(byte)OpCode.BitOr] = BitOr;
-        methods[(byte)OpCode.Compare] = Compare;
-        
-        methods[(byte)OpCode.Negate] = Negate;
-        
-        methods[(byte)OpCode.ToPtr_ValueType] = ToPtr_ValueType;
-        methods[(byte)OpCode.ToPtr_RefType] = ToPtr_RefType;
-        methods[(byte)OpCode.PtrGet] = PtrGet;
-        methods[(byte)OpCode.PtrSet] = PtrSet;
-        methods[(byte)OpCode.PtrShift] = PtrShift;
-        
-        methods[(byte)OpCode.FieldAccess] = FieldAccess;
-        
-        methods[(byte)OpCode.AllocateRSPSaver] = AllocateRSPSaver;
-        methods[(byte)OpCode.RestoreRSPSaver] = RestoreRSPSaver;
-        methods[(byte)OpCode.DeallocateRSPSaver] = DeallocateRSPSaver;
-        
-        methods[(byte)OpCode.Cast] = Cast;
-        
-        methods[(byte)OpCode.Section] = Section;
+        HashSet<string> opCodeNames = new(Enum.GetNames<OpCode>());
+
+        foreach (MethodInfo methodInfo in GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+        {
+            if (opCodeNames.Contains(methodInfo.Name))
+            {
+                OpCode opCode = Enum.Parse<OpCode>(methodInfo.Name);
+                methods[(byte)opCode] = methodInfo.CreateDelegate<Action>(this);
+            }
+        }
     }
     
     public void Load(byte[] byteCode)
@@ -93,8 +67,9 @@ public partial class VM
             
             // memory.Dump(stackDumpFile);
         }
-        
-        Console.WriteLine($"Successful executed in {w.ElapsedMilliseconds} ms with exit code {memory.ReadInt(0)}");
+
+        exitCode = memory.ReadInt(dataSectionSize);
+        Console.WriteLine($"Successful executed in {w.ElapsedMilliseconds} ms with exit code {exitCode}");
         
         
         // memory.Dump(stackDumpFile);
