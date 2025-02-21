@@ -20,6 +20,7 @@ public enum OpCode : byte
     Sub,
     Mul,
     Div,
+    DivRemainder,
     LeftBitShift,
     RightBitShift,
     BitAnd,

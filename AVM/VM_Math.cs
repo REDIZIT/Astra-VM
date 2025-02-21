@@ -18,6 +18,10 @@ public partial class VM
     {
         Math_Binary(OpCode.Div);
     }
+    private void DivRemainder()
+    {
+        Math_Binary(OpCode.DivRemainder);
+    }
     private void LeftBitShift()
     {
         Math_Binary(OpCode.LeftBitShift);
@@ -140,6 +144,7 @@ public partial class VM
             case OpCode.Sub: return (byte)(a - b);
             case OpCode.Mul: return (byte)(a * b);
             case OpCode.Div: return (byte)(a / b);
+            case OpCode.DivRemainder: return (byte)(a % b);
             case OpCode.LeftBitShift: return (byte)(a << b);
             case OpCode.RightBitShift: return (byte)(a >> b);
             case OpCode.BitAnd: return (byte)(a & b);
@@ -155,6 +160,7 @@ public partial class VM
             case OpCode.Sub: return (short)(a - b);
             case OpCode.Mul: return (short)(a * b);
             case OpCode.Div: return (short)(a / b);
+            case OpCode.DivRemainder: return (short)(a % b);
             case OpCode.LeftBitShift: return (short)(a << b);
             case OpCode.RightBitShift: return (short)(a >> b);
             case OpCode.BitAnd: return (short)(a & b);
@@ -170,6 +176,7 @@ public partial class VM
             case OpCode.Sub: return a - b;
             case OpCode.Mul: return a * b;
             case OpCode.Div: return a / b;
+            case OpCode.DivRemainder: return a % b;
             case OpCode.LeftBitShift: return a << b;
             case OpCode.RightBitShift: return a >> b;
             case OpCode.BitAnd: return a & b;
@@ -185,6 +192,7 @@ public partial class VM
             case OpCode.Sub: return a - b;
             case OpCode.Mul: return a * b;
             case OpCode.Div: return a / b;
+            case OpCode.DivRemainder: return a % b;
             case OpCode.LeftBitShift: return a << (int)b;
             case OpCode.RightBitShift: return a >> (int)b;
             case OpCode.BitAnd: return a & b;
