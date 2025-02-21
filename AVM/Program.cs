@@ -6,7 +6,13 @@ public static class Program
     {
         VM vm = new();
 
-        string filepath = "C:/Users/REDIZIT/Documents/GitHub/AstraOS/main/vscode project/build/project.nasm";
+        string filepath = "C:/Users/REDIZIT/Documents/GitHub/AstraOS/main/vscode project/build/project.asc";
+
+        if (args.Length > 0)
+        {
+            filepath = args[0];
+        }
+        
         byte[] byteCode = File.ReadAllBytes(filepath);
 
         vm.Load(byteCode);
