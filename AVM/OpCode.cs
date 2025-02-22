@@ -28,6 +28,8 @@ public enum OpCode : byte
     Compare,
     
     Negate,
+    Increment,
+    Decrement,
 
     ToPtr_ValueType,
     ToPtr_RefType,

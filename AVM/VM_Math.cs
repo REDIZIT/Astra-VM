@@ -43,6 +43,14 @@ public partial class VM
     {
         Math_Unary(OpCode.Negate);
     }
+    private void Increment()
+    {
+        Math_IncDec(OpCode.Increment);
+    }
+    private void Decrement()
+    {
+        Math_IncDec(OpCode.Decrement);
+    }
 
 
     private void Math_Binary(OpCode op)
@@ -79,7 +87,17 @@ public partial class VM
         else if (sizeInBytes == 8) MathMemory_Unary_Long(aAddress, resultAddress, op);
         else throw new Exception($"Bad Math's sizeInBytes = {sizeInBytes}");
     }
-    
+    private void Math_IncDec(OpCode op)
+    {
+        int targetAddress = NextAddress();
+        byte sizeInBytes = Next();
+        
+        if (sizeInBytes == 1) MathMemory_IncDec_Byte(targetAddress, op);
+        else if (sizeInBytes == 2) MathMemory_IncDec_Short(targetAddress, op);
+        else if (sizeInBytes == 4) MathMemory_IncDec_Int(targetAddress, op);
+        else if (sizeInBytes == 8) MathMemory_IncDec_Long(targetAddress, op);
+        else throw new Exception($"Bad Math's sizeInBytes = {sizeInBytes}");
+    }
 
     private void MathMemory_Bytes(int aAddress, int bAddress, int resultAddress, OpCode op)
     {
@@ -110,6 +128,8 @@ public partial class VM
         memory.Write(resultAddress, BitConverter.GetBytes(result));
     }
 
+    
+    
     private void MathMemory_Unary_Byte(int aAddress, int resultAddress, OpCode op)
     {
         byte a = memory.Read(aAddress);
@@ -133,6 +153,33 @@ public partial class VM
         long a = memory.ReadLong(aAddress);
         long result = Math_Unary_Long(a, op);
         memory.Write(resultAddress, BitConverter.GetBytes(result));
+    }
+    
+    
+    
+    private void MathMemory_IncDec_Byte(int targetAddress, OpCode op)
+    {
+        byte a = memory.Read(targetAddress);
+        byte result = Math_IncDec_Byte(a, op);
+        memory.Write(targetAddress, result);
+    }
+    private void MathMemory_IncDec_Short(int targetAddress, OpCode op)
+    {
+        short a = memory.ReadShort(targetAddress);
+        short result = Math_IncDec_Short(a, op);
+        memory.Write(targetAddress, BitConverter.GetBytes(result));
+    }
+    private void MathMemory_IncDec_Int(int targetAddress, OpCode op)
+    {
+        int a = memory.ReadInt(targetAddress);
+        int result = Math_IncDec_Int(a, op);
+        memory.Write(targetAddress, BitConverter.GetBytes(result));
+    }
+    private void MathMemory_IncDec_Long(int targetAddress, OpCode op)
+    {
+        long a = memory.ReadLong(targetAddress);
+        long result = Math_IncDec_Long(a, op);
+        memory.Write(targetAddress, BitConverter.GetBytes(result));
     }
     
     
@@ -231,6 +278,45 @@ public partial class VM
         {
             case OpCode.Negate: return -a;
             default: throw new Exception($"Invalid unary math opcode {op}");
+        }
+    }
+    
+    
+    
+    private byte Math_IncDec_Byte(byte a, OpCode op)
+    {
+        switch (op)
+        {
+            case OpCode.Increment: return ++a;
+            case OpCode.Decrement: return --a;
+            default: throw new Exception($"Invalid IncDec math opcode {op}");
+        }
+    }
+    private short Math_IncDec_Short(short a, OpCode op)
+    {
+        switch (op)
+        {
+            case OpCode.Increment: return ++a;
+            case OpCode.Decrement: return --a;
+            default: throw new Exception($"Invalid IncDec math opcode {op}");
+        }
+    }
+    private int Math_IncDec_Int(int a, OpCode op)
+    {
+        switch (op)
+        {
+            case OpCode.Increment: return ++a;
+            case OpCode.Decrement: return --a;
+            default: throw new Exception($"Invalid IncDec math opcode {op}");
+        }
+    }
+    private long Math_IncDec_Long(long a, OpCode op)
+    {
+        switch (op)
+        {
+            case OpCode.Increment: return ++a;
+            case OpCode.Decrement: return --a;
+            default: throw new Exception($"Invalid IncDec math opcode {op}");
         }
     }
 }
