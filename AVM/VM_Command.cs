@@ -2,6 +2,8 @@
 
 public partial class VM
 {
+    private List<Form> forms = new();
+
     private void VMCommand()
     { 
         VMCommand_Cmd cmd = (VMCommand_Cmd)Next();
@@ -10,10 +12,38 @@ public partial class VM
         {
             Print();
         }
+        else if (cmd == VMCommand_Cmd.CreateWindow)
+        {
+            CreateWindow();
+        }
+        else if (cmd == VMCommand_Cmd.Sleep)
+        {
+            Sleep();
+        }
         else
         {
             throw new Exception($"VM command {cmd} is not implemented.");
         }
+    }
+
+    private void CreateWindow()
+    {
+        int argumentsCount = NextInt();
+
+        Application.EnableVisualStyles();
+
+        Form form = new();
+        forms.Add(form);
+        Thread t = StartTheThread(form);
+    }
+    private Thread StartTheThread(Form form)
+    {
+        var t = new Thread(() =>
+        {
+            Application.Run(form);
+        });
+        t.Start();
+        return t;
     }
 
     private void Print()
@@ -74,5 +104,22 @@ public partial class VM
         }
         
         Console.WriteLine();
+    }
+
+    private void Sleep()
+    {
+        int argumentsCount = NextInt();
+        NextVMVariable(out int rbp, out _, out _);
+
+        int ms = memory.ReadInt(memory.ToAbs(rbp));
+
+        Thread.Sleep(ms);
+    }
+
+    private void NextVMVariable(out int rbp, out byte size, out byte typeIndex)
+    {
+        rbp = NextInt();
+        size = Next();
+        typeIndex = Next();
     }
 }

@@ -61,4 +61,6 @@ public enum Allocate_Stack_Mode : byte
 public enum VMCommand_Cmd : byte
 {
     Print,
+    CreateWindow,
+    Sleep,
 }

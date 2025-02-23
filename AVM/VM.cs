@@ -14,7 +14,18 @@ public partial class VM
     private Action[] methods;
 
     private List<OpCode> completedOpCodes = new();
+    private int completedOpCodesCount = 0;
     private const int COMPLETED_OPCODES_LIMIT = 1000;
+
+    private class Record
+    {
+        public OpCode code;
+        public int count;
+        public long totalTicks;
+
+        public float AvgTicksPerCount => totalTicks / (float)count;
+        public float Ms => totalTicks / 10_000f;
+    }
 
     public VM()
     {
@@ -43,6 +54,8 @@ public partial class VM
         string stackDumpFile = "dumps/stack.raw";
         
         Stopwatch w = Stopwatch.StartNew();
+
+        Dictionary<OpCode, Record> records = new();
         
         while (current < byteCode.Length)
         {
@@ -52,13 +65,28 @@ public partial class VM
             
             if (opCodeByte > 0 && opCodeByte < methods.Length && methods[opCodeByte] != null)
             {
+                long beginTicks = DateTime.Now.Ticks;
                 methods[opCodeByte]();
-                completedOpCodes.Add(opCode);
+                long endTicks = DateTime.Now.Ticks;
 
-                if (completedOpCodes.Count >= COMPLETED_OPCODES_LIMIT)
+                if (records.ContainsKey(opCode) == false)
                 {
-                    throw new Exception($"Too many opcodes completed ({COMPLETED_OPCODES_LIMIT}). Seems, there is a infinite loop.");
+                    records.Add(opCode, new Record()
+                    {
+                        code = opCode
+                    });
                 }
+                Record record = records[opCode];
+                record.totalTicks += endTicks - beginTicks;
+                record.count++;
+
+                //completedOpCodes.Add(opCode);
+                completedOpCodesCount++;
+
+                //if (completedOpCodesCount >= COMPLETED_OPCODES_LIMIT)
+                //{
+                //    throw new Exception($"Too many opcodes completed ({COMPLETED_OPCODES_LIMIT}). Seems, there is a infinite loop.");
+                //}
             }
             else
             {
@@ -70,8 +98,14 @@ public partial class VM
 
         exitCode = memory.ReadInt(dataSectionSize);
         Console.WriteLine($"Successful executed in {w.ElapsedMilliseconds} ms with exit code {exitCode}");
-        
-        
+
+        Console.WriteLine();
+        foreach (Record r in records.OrderByDescending(kv => kv.Value.AvgTicksPerCount).Select(kv => kv.Value))
+        {
+            Console.WriteLine($"{r.code}: ".PadRight(20) + $"{r.Ms.ToString("0.0")} ms ({r.totalTicks} ticks)".PadRight(26) + $"{r.count} times ({r.AvgTicksPerCount.ToString("0.0")} ticks/invoke)");
+        }
+
+
         // memory.Dump(stackDumpFile);
     }
     
@@ -249,5 +283,10 @@ public partial class VM
     private void Exit()
     {
         current = byteCode.Length;
+
+        foreach (Form form in forms)
+        {
+            form.Close();
+        }
     }
 }
