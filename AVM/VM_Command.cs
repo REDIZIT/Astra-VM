@@ -30,11 +30,24 @@ public partial class VM
     {
         int argumentsCount = NextInt();
 
+        NextVMVariable(out int retRpb, out _, out _);
+
         Application.EnableVisualStyles();
 
         Form form = new();
         forms.Add(form);
         Thread t = StartTheThread(form);
+
+        Window window = new Window()
+        {
+            test = 78
+        };
+
+        int heapPtr = memory.Allocate_Heap(sizeof(int));
+        byte[] bytes = BytesSerializer.Serialize(window);
+        memory.Write(heapPtr, bytes);
+
+        memory.WriteInt(memory.ToAbs(retRpb), heapPtr);
     }
     private Thread StartTheThread(Form form)
     {
@@ -122,4 +135,9 @@ public partial class VM
         size = Next();
         typeIndex = Next();
     }
+}
+
+public struct Window
+{
+    public int test;
 }
