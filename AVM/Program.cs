@@ -6,7 +6,7 @@ public static class Program
     {
         VM vm = new();
 
-        string filepath = "C:/Users/REDIZIT/Documents/GitHub/AstraOS/main/vscode project/build/project.asc";
+        string filepath = "C:\\Users\\REDIZIT\\Documents\\GitHub\\Astra Projects\\Desktop\\bin\\project.asc";
 
         if (args.Length > 0)
         {

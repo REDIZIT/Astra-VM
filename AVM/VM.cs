@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using Astra.Shared;
 
 namespace AVM;
 
@@ -16,6 +17,8 @@ public partial class VM
     private List<OpCode> completedOpCodes = new();
     private int completedOpCodesCount = 0;
     private const int COMPLETED_OPCODES_LIMIT = 1000;
+
+    private CompiledModule module;
 
     private class Record
     {
@@ -43,9 +46,19 @@ public partial class VM
         }
     }
     
-    public void Load(byte[] byteCode)
+    public void Load(byte[] moduleBytes)
     {
-        this.byteCode = byteCode;
+        BinaryFile file = new BinaryFile(moduleBytes.ToList());
+        module = BinarySerializer.Deserialize<CompiledModule>(file);
+
+        Console.WriteLine($"Module loaded with {module.metaTable.types.Length} types:");
+        foreach (TypeInfo_Blit type in module.metaTable.types)
+        {
+            Console.WriteLine($" - {type.name} ({string.Join(", ", type.functions.Select(i => module.metaTable.functions[i].name))})");
+        }
+        Console.WriteLine();
+        
+        this.byteCode = module.managedCode.byteCode;
         current = 0;
     }
 
@@ -104,6 +117,7 @@ public partial class VM
         {
             Console.WriteLine($"{r.code}: ".PadRight(20) + $"{r.Ms.ToString("0.0")} ms ({r.totalTicks} ticks)".PadRight(26) + $"{r.count} times ({r.AvgTicksPerCount.ToString("0.0")} ticks/invoke)");
         }
+        Console.WriteLine();
 
 
         // memory.Dump(stackDumpFile);

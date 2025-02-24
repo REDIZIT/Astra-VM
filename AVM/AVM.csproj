@@ -12,4 +12,16 @@
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="..\..\AstraNASM\AstraNASM\Shared\BinaryFile.cs">
+        <Link>Import\Shared\BinaryFile.cs</Link>
+      </Compile>
+      <Compile Include="..\..\AstraNASM\AstraNASM\Shared\BinarySerializer.cs">
+        <Link>Import\Shared\BinarySerializer.cs</Link>
+      </Compile>
+      <Compile Include="..\..\AstraNASM\AstraNASM\Shared\CompiledModule.cs">
+        <Link>Import\Shared\CompiledModule.cs</Link>
+      </Compile>
+    </ItemGroup>
 </Project>
