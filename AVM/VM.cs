@@ -9,7 +9,7 @@ public partial class VM
     public int exitCode;
     
     private byte[] byteCode;
-    private int current;
+    public int current;
     public Memory memory = new();
 
     private Action[] methods;
@@ -18,7 +18,7 @@ public partial class VM
     private int completedOpCodesCount = 0;
     private const int COMPLETED_OPCODES_LIMIT = 1000;
 
-    private CompiledModule module;
+    private DynamicModule module;
 
     private class Record
     {
@@ -49,9 +49,10 @@ public partial class VM
     public void Load(byte[] moduleBytes)
     {
         BinaryFile file = new BinaryFile(moduleBytes.ToList());
-        module = BinarySerializer.Deserialize<CompiledModule>(file);
+        CompiledModule compiled = BinarySerializer.Deserialize<CompiledModule>(file);
+        module = new(compiled);
 
-        Console.WriteLine($"Module loaded with {module.metaTable.types.Length} types:");
+        Console.WriteLine($"Module loaded with {module.metaTable.types.Count} types:");
         foreach (TypeInfo_Blit type in module.metaTable.types)
         {
             Console.WriteLine($" - {type.name} ({string.Join(", ", type.functions.Select(i => module.metaTable.functions[i].name))})");
@@ -75,25 +76,36 @@ public partial class VM
             byte opCodeByte = Next();
 
             OpCode opCode = (OpCode)opCodeByte;
+            bool isSleepCmd = false;
             
             if (opCodeByte > 0 && opCodeByte < methods.Length && methods[opCodeByte] != null)
             {
                 long beginTicks = DateTime.Now.Ticks;
+
+                if (opCode == OpCode.VMCommand)
+                {
+                    isSleepCmd = byteCode[current] == (byte)VMCommand_Cmd.Sleep;
+                }
                 methods[opCodeByte]();
+                
                 long endTicks = DateTime.Now.Ticks;
 
-                if (records.ContainsKey(opCode) == false)
+                if (isSleepCmd == false)
                 {
-                    records.Add(opCode, new Record()
+                    if (records.ContainsKey(opCode) == false)
                     {
-                        code = opCode
-                    });
+                        records.Add(opCode, new Record()
+                        {
+                            code = opCode
+                        });
+                    }
+                    Record record = records[opCode];
+                    record.totalTicks += endTicks - beginTicks;
+                    record.count++;
                 }
-                Record record = records[opCode];
-                record.totalTicks += endTicks - beginTicks;
-                record.count++;
+                
 
-                //completedOpCodes.Add(opCode);
+                completedOpCodes.Add(opCode);
                 completedOpCodesCount++;
 
                 //if (completedOpCodesCount >= COMPLETED_OPCODES_LIMIT)
@@ -123,25 +135,25 @@ public partial class VM
         // memory.Dump(stackDumpFile);
     }
     
-    private byte Next()
+    public byte Next()
     {
         byte b = byteCode[current];
         current++;
         return b;
     }
 
-    private int NextInt()
+    public int NextInt()
     {
         return BitConverter.ToInt32(Next(sizeof(int)));
     }
 
-    private int NextAddress()
+    public int NextAddress()
     {
         int rbpOffset = NextInt();
         return memory.ToAbs(rbpOffset);
     }
 
-    private byte[] Next(byte bytesCount)
+    public byte[] Next(byte bytesCount)
     {
         byte[] bytes = new byte[bytesCount];
         for (int i = 0; i < bytesCount; i++)
@@ -168,8 +180,10 @@ public partial class VM
     {
         memory.PushInt(current - 1);
 
-        int opCodePointer = NextInt();
-        current = opCodePointer;
+        int inModuleFunctionIndex = NextInt();
+        FunctionInfo_Dynamic func = module.metaTable.functions[inModuleFunctionIndex];
+        func.implementation.Implement(this);
+        // current = func.pointedOpCode - 1;
     }
 
     private void Return()

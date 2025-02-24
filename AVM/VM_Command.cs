@@ -2,7 +2,8 @@
 
 public partial class VM
 {
-    private List<Form> forms = new();
+    public List<Form> forms = new();
+    public Graphics graphic;
 
     private void VMCommand()
     { 
@@ -36,7 +37,22 @@ public partial class VM
 
         Form form = new();
         forms.Add(form);
+
+        bool isReady = false;
+
+        form.Shown += (_, _) =>
+        {
+            isReady = true;
+        };
+        
         Thread t = StartTheThread(form);
+
+        while (isReady == false)
+        {
+            Thread.Sleep(1);
+        }
+
+        graphic = form.CreateGraphics();
 
         Window window = new Window()
         {
