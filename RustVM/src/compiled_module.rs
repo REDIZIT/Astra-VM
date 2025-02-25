@@ -1,6 +1,6 @@
 ﻿use crate::binary_file::BinaryFile;
 
-pub fn deserialize_module_from_bytes(buffer: Vec<u8>) -> CompiledModule {
+pub fn deserialize_module_from_bytes(buffer: &Vec<u8>) -> CompiledModule {
 
     let mut file: BinaryFile = BinaryFile::new(buffer);
     let module = deserialize_module(&mut file);
@@ -44,10 +44,10 @@ fn deserialize_function(file: &mut BinaryFile) -> FunctionInfo_Blit
         name: file.next_string(),
         is_static: file.next_bool(),
         is_abstract: file.next_bool(),
-        owner_type: file.next_int(),
+        owner_type: file.next_uint(),
         arguments: deserialize_fields(file),
         returns: deserialize_indexes(file),
-        pointed_opcode: file.next_int()
+        pointed_opcode: file.next_uint()
     }
 }
 
@@ -93,14 +93,14 @@ fn deserialize_field(file: &mut BinaryFile) -> FieldInfo_Blit
 {
     FieldInfo_Blit {
         name: file.next_string(),
-        type_index: file.next_int()
+        type_index: file.next_uint()
     }
 }
 
 fn deserialize_indexes(file: &mut BinaryFile) -> Vec<u32>
 {
     let count = file.next_int();
-    (0..count).map(|_| file.next_int()).collect()
+    (0..count).map(|_| file.next_uint()).collect()
 }
 
 

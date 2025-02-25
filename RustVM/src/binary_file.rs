@@ -6,10 +6,10 @@
 
 impl BinaryFile
 {
-    pub fn new(bytes: Vec<u8>) -> Self
+    pub fn new(bytes: &Vec<u8>) -> Self
     {
         Self {
-            bytes,
+            bytes: bytes.clone(),
             current: 0
         }
     }
@@ -28,9 +28,13 @@ impl BinaryFile
         slice
     }
 
-    pub fn next_int(&mut self) -> u32
+    pub fn next_uint(&mut self) -> u32
     {
         u32::from_ne_bytes(self.next_range(4).try_into().unwrap())
+    }
+    pub fn next_int(&mut self) -> i32
+    {
+        i32::from_ne_bytes(self.next_range(4).try_into().unwrap())
     }
 
     pub fn next_string(&mut self) -> String

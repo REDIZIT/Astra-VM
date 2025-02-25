@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 num_enum = "0.7"
+stopwatch = "0.0.7"
