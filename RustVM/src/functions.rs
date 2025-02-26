@@ -1,11 +1,13 @@
-﻿use std::fs::metadata;
+﻿mod math_functions;
+
+use crate::functions::math_functions::{*};
 use crate::vm::VM;
 
 pub fn get_functions() -> [fn(&mut VM); 37]
 {
     let functions =
     [
-        invalid,
+        do_nothing,
         allocate_stack,
         allocate_heap,
         deallocate_stack,
@@ -46,9 +48,8 @@ pub fn get_functions() -> [fn(&mut VM); 37]
     functions
 }
 
-fn invalid(vm: &mut VM)
+fn do_nothing(_vm: &mut VM)
 {
-    
 }
 fn allocate_stack(vm: &mut VM)
 {
@@ -90,8 +91,10 @@ fn allocate_heap(vm: &mut VM)
         vm.memory.write_int(storage_address, pointer as i32)
     }
 }
-fn deallocate_stack(vm: &mut VM) {
-    
+fn deallocate_stack(vm: &mut VM)
+{
+    let bytes_to_deallocate = vm.byte_code.next_int();
+    vm.memory.deallocate_stack(bytes_to_deallocate);
 }
 fn prologue(vm: &mut VM)
 {
@@ -117,11 +120,31 @@ fn _return(vm: &mut VM)
     let call_op_code_pointer = vm.memory.pop_int();
     vm.byte_code.current = (call_op_code_pointer + 1 + 4) as usize; // + 1 (OpCode.Call) + int (pointer to label)
 }
-fn jump(vm: &mut VM) {
-
+fn jump(vm: &mut VM)
+{
+    let address = vm.byte_code.next_int();
+    vm.byte_code.current = address as usize;
 }
-fn jump_if_false(vm: &mut VM) {
+fn jump_if_false(vm: &mut VM)
+{
+    let jump_address = vm.byte_code.next_int();
+    let condition_address = vm.next_address();
+    let size_in_bytes = vm.byte_code.next();
 
+    let mut is_true = false;
+    for b in vm.memory.read(condition_address, size_in_bytes as i32)
+    {
+        if *b > 0
+        {
+            is_true = true;
+            break;
+        }
+    }
+
+    if is_true == false
+    {
+        vm.byte_code.current = jump_address as usize;
+    }
 }
 fn exit(vm: &mut VM)
 {
@@ -133,12 +156,12 @@ fn mov(vm: &mut VM)
     let dst_mode = vm.byte_code.next();
     let dst_address: i32;
 
-    if dst_mode == 0
+    if dst_mode == 1
     {
         // Dst is pointer
         dst_address = vm.next_address();
     }
-    else if dst_mode == 1
+    else if dst_mode == 2
     {
         // Dst is address behind pointer
         let dst_ptr_address = vm.next_address();
@@ -189,46 +212,6 @@ fn mov(vm: &mut VM)
     {
         panic!("Invalid mov's src_mode {src_mode}");
     }
-}
-
-fn add(vm: &mut VM) {
-
-}
-fn sub(vm: &mut VM) {
-
-}
-fn mul(vm: &mut VM) {
-
-}
-fn div(vm: &mut VM) {
-
-}
-fn div_remainder(vm: &mut VM) {
-
-}
-fn left_bit_shift(vm: &mut VM) {
-
-}
-fn right_bit_shift(vm: &mut VM) {
-
-}
-fn bit_and(vm: &mut VM) {
-
-}
-fn bit_or(vm: &mut VM) {
-
-}
-fn compare(vm: &mut VM) {
-
-}
-fn negate(vm: &mut VM) {
-
-}
-fn increment(vm: &mut VM) {
-
-}
-fn decrement(vm: &mut VM) {
-
 }
 
 fn to_ptr_value_type(vm: &mut VM) {

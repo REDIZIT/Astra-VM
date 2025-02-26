@@ -40,6 +40,10 @@ impl Memory
         self.heap_pointer += bytes_to_allocate;
         pointer
     }
+    pub fn deallocate_stack(&mut self, bytes_to_deallocate: i32)
+    {
+        self.stack_pointer -= bytes_to_deallocate;
+    }
 
     pub fn push_int(&mut self, value: i32)
     {

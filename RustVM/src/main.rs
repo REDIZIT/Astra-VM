@@ -13,7 +13,6 @@ use crate::binary_file::BinaryFile;
 use crate::compiled_module::deserialize_module_from_bytes;
 use crate::functions::get_functions;
 use crate::memory::Memory;
-use crate::opcodes::OpCode;
 use crate::vm::VM;
 
 fn main() {
@@ -43,15 +42,15 @@ fn main() {
 
     while vm.byte_code.can_next()
     {
-        if total_opcodes_completed > 1000 {
-            panic!("Too many opcodes completed. Seems there is an infinite loop.")
-        }
-        total_opcodes_completed += 1;
-
+        // if total_opcodes_completed > 1000 {
+        //     panic!("Too many opcodes completed. Seems there is an infinite loop.")
+        // }
+        // total_opcodes_completed += 1;
+        
         let byte_opcode = vm.byte_code.next();
-        let opcode = OpCode::try_from(byte_opcode).expect("Invalid opcode");
+        // let opcode = OpCode::try_from(byte_opcode).expect("Invalid opcode");
 
-        println!("{:?}", opcode);
+        // println!("{:?}", opcode);
 
         functions[byte_opcode as usize](&mut vm);
     }
