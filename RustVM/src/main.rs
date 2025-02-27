@@ -1,9 +1,9 @@
 mod binary_file;
 mod compiled_module;
 mod opcodes;
-mod functions;
 mod vm;
 mod memory;
+mod functions;
 
 use std::fs::File;
 use std::io::Read;
@@ -46,7 +46,7 @@ fn main() {
         //     panic!("Too many opcodes completed. Seems there is an infinite loop.")
         // }
         // total_opcodes_completed += 1;
-        
+
         let byte_opcode = vm.byte_code.next();
         // let opcode = OpCode::try_from(byte_opcode).expect("Invalid opcode");
 

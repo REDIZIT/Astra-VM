@@ -146,9 +146,3 @@ fn bool_to_vec(value: bool, size: usize) -> Vec<u8>
     }    
     vec
 }
-
-
-pub fn compare(vm: &mut VM) 
-{
-
-}

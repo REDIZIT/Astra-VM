@@ -68,6 +68,10 @@ impl Memory
     {
         self.slice(address, 4).copy_from_slice(value.to_ne_bytes().as_slice());
     }
+    pub fn write_byte(&mut self, address: i32, value: u8)
+    {
+        self.bytes[address as usize] = value;
+    }
 
     pub fn read(&self, address: i32, count: i32) -> &[u8]
     {

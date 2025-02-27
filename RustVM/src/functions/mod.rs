@@ -1,5 +1,7 @@
 ﻿mod math_functions;
+mod compare_functions;
 
+use crate::functions::compare_functions::compare;
 use crate::functions::math_functions::{*};
 use crate::vm::VM;
 
@@ -214,44 +216,130 @@ fn mov(vm: &mut VM)
     }
 }
 
-fn to_ptr_value_type(vm: &mut VM) {
+fn to_ptr_value_type(vm: &mut VM)
+{
+    let asked_variable_address = vm.next_address();
+    let result_address = vm.next_address();
 
+    vm.memory.write_int(result_address, asked_variable_address);
 }
 
-fn to_ptr_ref_type(vm: &mut VM) {
+fn to_ptr_ref_type(vm: &mut VM)
+{
+    let asked_variable_address = vm.next_address();
+    let result_address = vm.next_address();
 
+    let value_address = vm.memory.read_int(asked_variable_address); // depoint one more time
+
+    vm.memory.write_int(result_address, value_address);
 }
 
-fn ptr_get(vm: &mut VM) {
+fn ptr_get(vm: &mut VM)
+{
+    let pointer_address = vm.next_address();
+    let result_address = vm.next_address();
+    let size_in_bytes = vm.byte_code.next();
 
+    let depointed_address = vm.memory.read_int(pointer_address);
+    vm.memory.copy(depointed_address, result_address, size_in_bytes as i32);
 }
 
-fn ptr_set(vm: &mut VM) {
+fn ptr_set(vm: &mut VM)
+{
+    let pointer_address = vm.next_address();
+    let value_address = vm.next_address();
+    let size_in_bytes = vm.byte_code.next();
 
+    let depointed_address = vm.memory.read_int(pointer_address);
+    vm.memory.copy(value_address, depointed_address, size_in_bytes as i32);
 }
 
-fn ptr_shift(vm: &mut VM) {
+fn ptr_shift(vm: &mut VM)
+{
+    let mode = vm.byte_code.next();
+    let pointer_address = vm.next_address();
 
+    let shift_value;
+
+    if mode == 0
+    {
+        shift_value = vm.byte_code.next_int();
+    }
+    else
+    {
+        let shift_address = vm.next_address();
+        let additional_shift = vm.byte_code.next_int();
+        let size_in_bytes = vm.byte_code.next();
+
+        shift_value = vm.memory.read_int(shift_address) + additional_shift;
+    }
+
+    let mut pointer_value = vm.memory.read_int(pointer_address);
+    pointer_value += shift_value;
+    vm.memory.write_int(pointer_address, pointer_value);
 }
 
-fn field_access(vm: &mut VM) {
+fn field_access(vm: &mut VM)
+{
+    let base_offset = vm.byte_code.next_int();
+    let field_offset = vm.byte_code.next_int();
+    let field_value_size = vm.byte_code.next();
+    let is_getter = vm.byte_code.next();
+    let result_address = vm.next_address();
 
+    let address_in_stack = vm.memory.to_abs(base_offset);
+    let address_in_heap = vm.memory.read_int(address_in_stack);
+
+    // fieldPointer is pointing to valid address of ref-type.field
+    let field_pointer = address_in_heap + field_offset;
+
+
+    // If we don't need a pointer (like setter), but want to get a value (like getter)
+    if is_getter > 0
+    {
+        // Depoint rbx to get actual field value due to getter
+        // Put in result a value (not fixed size) of field (getter)
+        vm.memory.copy(field_pointer, result_address, field_value_size as i32);
+    }
+    else
+    {
+        // Put in result a pointer (fixed size) to field (setter)
+        vm.memory.write_int(result_address, field_pointer);
+    }
 }
 
 fn allocate_rsp_saver(vm: &mut VM) {
-
+    panic!("Legacy method")
 }
 
 fn restore_rsp_saver(vm: &mut VM) {
-
+    panic!("Legacy method")
 }
 
 fn deallocate_rsp_saver(vm: &mut VM) {
-
+    panic!("Legacy method")
 }
 
-fn cast(vm: &mut VM) {
+fn cast(vm: &mut VM)
+{
+    let variable_address = vm.next_address();
+    let variable_size = vm.byte_code.next();
+    let result_address = vm.next_address();
+    let result_size = vm.byte_code.next();
 
+    let variable_value = vm.memory.read(variable_address, variable_size as i32).to_vec();
+
+    for i in 0..result_size as i32
+    {
+        if i < variable_value.len() as i32
+        {
+            vm.memory.write_byte(result_address + i, variable_value[i as usize]);
+        }
+        else
+        {
+            vm.memory.write_byte(result_address + i, 0);
+        }
+    }
 }
 
 fn section(vm: &mut VM) {
@@ -275,6 +363,7 @@ fn section(vm: &mut VM) {
     let next_mode = vm.byte_code.next();
 }
 
-fn vm_command(vm: &mut VM) {
-
+fn vm_command(vm: &mut VM)
+{
+    panic!("Not supported yet");
 }
