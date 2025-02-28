@@ -4,6 +4,7 @@ mod opcodes;
 mod vm;
 mod memory;
 mod functions;
+mod winframework;
 
 use std::env;
 use std::fs::File;
@@ -49,8 +50,8 @@ pub fn vm_start()
     let mut buffer = Vec::new();
     file.unwrap().read_to_end(&mut buffer).unwrap();
 
-    let module = deserialize_module_from_bytes(&buffer);
-
+    let mut module = deserialize_module_from_bytes(&buffer);
+    winframework::apply(&mut module);
 
     let functions = get_functions();
 

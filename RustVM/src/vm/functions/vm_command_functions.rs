@@ -1,4 +1,6 @@
 ﻿use std::fmt::Arguments;
+use std::thread;
+use std::time::Duration;
 use crate::vm::opcodes::VMCommand_Cmd;
 use crate::vm::vm::VM;
 
@@ -23,6 +25,7 @@ pub fn vm_command(vm: &mut VM)
 
     match cmd {
         VMCommand_Cmd::Print => vm_print(vm, arguments),
+        VMCommand_Cmd::Sleep => vm_sleep(vm, arguments),
         _ => panic!("Invalid VM command = {cmd_byte}")
     }
 }
@@ -57,6 +60,23 @@ fn vm_print(vm: &VM, arguments: Vec<VMCmdArgument>)
     }
 
     println!();
+}
+
+fn vm_sleep(vm: &VM, arguments: Vec<VMCmdArgument>)
+{
+    let duration_argument = &arguments[0];
+    let address = vm.memory.to_abs(duration_argument.rbp);
+    let value = vm.memory.read(address, duration_argument.size_in_bytes as i32);
+
+    let duration = match duration_argument.type_index {
+        1 => value[0] as u64,
+        2 => i16::from_ne_bytes(value.try_into().unwrap()) as u64,
+        3 => i32::from_ne_bytes(value.try_into().unwrap()) as u64,
+        4 => i64::from_ne_bytes(value.try_into().unwrap()) as u64,
+        _ => panic!("Failed to sleep due to invalid argument type_index = {}", duration_argument.type_index)
+    };
+
+    thread::sleep(Duration::from_millis(duration));
 }
 
 struct VMCmdArgument

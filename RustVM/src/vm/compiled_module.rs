@@ -47,6 +47,7 @@ fn deserialize_function(file: &mut BinaryFile) -> FunctionInfo_Blit
         owner_type: file.next_uint(),
         arguments: deserialize_fields(file),
         returns: deserialize_indexes(file),
+        pointed_module: file.next(),
         pointed_opcode: file.next_uint()
     }
 }
@@ -133,5 +134,6 @@ pub struct FunctionInfo_Blit {
     pub owner_type: u32,
     pub arguments: Vec<FieldInfo_Blit>,
     pub returns: Vec<u32>,
+    pub pointed_module: u8,
     pub pointed_opcode: u32
 }

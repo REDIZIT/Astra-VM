@@ -9,7 +9,7 @@ use crate::vm::functions::math_functions::{*};
 use crate::vm::functions::negate_function::negate;
 use crate::vm::functions::vm_command_functions::vm_command;
 use crate::vm::opcodes::VMCommand_Cmd;
-use crate::vm::VM;
+use crate::vm::{winframework, VM};
 
 pub fn get_functions() -> [fn(&mut VM); 37]
 {
@@ -120,8 +120,15 @@ fn call(vm: &mut VM)
 
     let inmodule_function_index = vm.byte_code.next_int() as usize;
     let function_info = &vm.module.table.functions[inmodule_function_index];
-
-    vm.byte_code.current = function_info.pointed_opcode as usize - 1;
+    
+    if function_info.pointed_module == 0
+    {
+        vm.byte_code.current = function_info.pointed_opcode as usize - 1;    
+    }
+    else
+    {  
+        winframework::call(vm, function_info);
+    }
 }
 fn _return(vm: &mut VM)
 {
