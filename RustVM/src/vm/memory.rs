@@ -17,7 +17,7 @@ impl Memory
             bytes: [0; Memory::STACK_SIZE as usize],
             stack_pointer: 0,
             base_pointer: 0,
-            heap_pointer: Memory::STACK_SIZE,
+            heap_pointer: Memory::STACK_SIZE / 2,
             data_section_size: 0,
         }
     }

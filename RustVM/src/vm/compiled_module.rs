@@ -1,4 +1,4 @@
-﻿use crate::binary_file::BinaryFile;
+﻿use crate::vm::binary_file::BinaryFile;
 
 pub fn deserialize_module_from_bytes(buffer: &Vec<u8>) -> CompiledModule {
 

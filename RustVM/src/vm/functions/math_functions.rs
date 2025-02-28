@@ -112,7 +112,9 @@ macro_rules! math_unary_op {
 math_unary_op!(increment, |a| a + 1);
 math_unary_op!(decrement, |a| a - 1);
 
-pub fn negate(vm: &mut VM)
+
+
+pub fn logical_not(vm: &mut VM)
 {
     let a_address = vm.next_address();
     let result_address = vm.next_address();
@@ -121,7 +123,9 @@ pub fn negate(vm: &mut VM)
     let a_value = vm.memory.read(a_address, size_in_bytes as i32);
     let result = !as_bool(a_value);
     
-    vm.memory.write_vec(result_address, bool_to_vec(result, size_in_bytes as usize));
+    let result_value = bool_to_vec(result, size_in_bytes as usize);
+    
+    vm.memory.write_vec(result_address, result_value);
 }
 
 fn as_bool(bytes: &[u8]) -> bool

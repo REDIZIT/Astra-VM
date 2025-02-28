@@ -54,12 +54,16 @@ pub enum OpCode
     Last
 }
 
+#[derive(Debug, TryFromPrimitive)]
+#[repr(u8)]
 pub enum Allocate_Stack_Mode
 {
     WithDefaultValue = 0,
     PushAlreadyAllocatedVariable = 1
 }
 
+#[derive(Debug, TryFromPrimitive)]
+#[repr(u8)]
 pub enum VMCommand_Cmd
 {
     Print,

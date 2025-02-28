@@ -1,6 +1,6 @@
-﻿use crate::binary_file::BinaryFile;
-use crate::compiled_module::CompiledModule;
-use crate::memory::Memory;
+﻿use crate::vm::binary_file::BinaryFile;
+use crate::vm::compiled_module::CompiledModule;
+use crate::vm::memory::Memory;
 
 pub struct VM<'a>
 {

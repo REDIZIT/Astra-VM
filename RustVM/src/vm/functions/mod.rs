@@ -1,8 +1,14 @@
 ﻿mod math_functions;
 mod compare_functions;
+mod negate_function;
+mod vm_command_functions;
 
-use crate::functions::compare_functions::compare;
-use crate::functions::math_functions::{*};
+use crate::debug_log;
+use crate::vm::functions::compare_functions::compare;
+use crate::vm::functions::math_functions::{*};
+use crate::vm::functions::negate_function::negate;
+use crate::vm::functions::vm_command_functions::vm_command;
+use crate::vm::opcodes::VMCommand_Cmd;
 use crate::vm::VM;
 
 pub fn get_functions() -> [fn(&mut VM); 37]
@@ -185,6 +191,7 @@ fn mov(vm: &mut VM)
         let size_in_bytes = vm.byte_code.next() as i32;
 
         vm.memory.copy(src_address, dst_address, size_in_bytes);
+        debug_log!("Mov: copy {} bytes from {} ({}) to {} ({})", size_in_bytes, src_address, src_mode, dst_address, dst_mode);
     }
     else if src_mode == 2
     {
@@ -193,6 +200,8 @@ fn mov(vm: &mut VM)
         let src_size_in_bytes = vm.byte_code.next();
         let src_value = vm.byte_code.next_range(src_size_in_bytes as usize);
         vm.memory.write_slice(dst_address, src_value);
+
+        debug_log!("Mov: copy {} bytes from byte_code ({}) to {} ({})", src_size_in_bytes, src_mode, dst_address, dst_mode);
     }
     else if src_mode == 3
     {
@@ -201,6 +210,7 @@ fn mov(vm: &mut VM)
         let src_size_in_bytes = vm.byte_code.next() as i32;
 
         vm.memory.copy(src_address, dst_address, src_size_in_bytes);
+        debug_log!("Mov: copy {} bytes from {} ({}) to {} ({})", src_size_in_bytes, src_address, src_mode, dst_address, dst_mode);
     }
     else if src_mode == 4
     {
@@ -209,6 +219,7 @@ fn mov(vm: &mut VM)
         let src_size_in_bytes = vm.byte_code.next() as i32;
 
         vm.memory.copy(src_address, dst_address, src_size_in_bytes);
+        debug_log!("Mov: copy {} bytes from {} ({}) to {} ({})", src_size_in_bytes, src_address, src_mode, dst_address, dst_mode);
     }
     else
     {
@@ -361,9 +372,4 @@ fn section(vm: &mut VM) {
 
     let next_section_opcode = vm.byte_code.next();
     let next_mode = vm.byte_code.next();
-}
-
-fn vm_command(vm: &mut VM)
-{
-    panic!("Not supported yet");
 }
