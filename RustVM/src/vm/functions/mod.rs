@@ -106,7 +106,7 @@ fn deallocate_stack(vm: &mut VM)
 }
 fn prologue(vm: &mut VM)
 {
-    vm.memory.push_int(vm.memory.base_pointer as i32);
+    vm.memory.push_int(vm.memory.base_pointer);
     vm.memory.base_pointer = vm.memory.stack_pointer;
 }
 fn epilogue(vm: &mut VM)
@@ -123,7 +123,7 @@ fn call(vm: &mut VM)
     
     if function_info.pointed_module == 0
     {
-        vm.byte_code.current = function_info.pointed_opcode as usize - 1;    
+        vm.byte_code.current = function_info.pointed_opcode as usize;
     }
     else
     {  
@@ -369,7 +369,8 @@ fn section(vm: &mut VM) {
         // Data section
         let data_section_size = vm.byte_code.next_int();
 
-        vm.byte_code.current += data_section_size as usize;
+        let data = vm.byte_code.next_range(data_section_size as usize);
+        vm.memory.write_slice(0, data);
         
         vm.memory.data_section_size = data_section_size;
         vm.memory.stack_pointer += data_section_size;

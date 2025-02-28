@@ -52,9 +52,9 @@ fn vm_print(vm: &VM, arguments: Vec<VMCmdArgument>)
                 let ptr_address = i32::from_ne_bytes(value.try_into().unwrap());
 
                 let str_len = vm.memory.read_int(ptr_address);
-                let str_value = vm.memory.read(address + 4, str_len);
+                let str_value = vm.memory.read(ptr_address + 4, str_len);
 
-                print!("'{:?}'", str_value);
+                print!("{:}", String::from_utf8(Vec::from(str_value)).unwrap());
             }
             _ => panic!("Failed to print argument with type_index = {}", arg.type_index)
         }

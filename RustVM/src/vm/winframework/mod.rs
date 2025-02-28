@@ -14,7 +14,7 @@ use windows::{
     core::*, Win32::Foundation::*, Win32::Graphics::Gdi::ValidateRect,
     Win32::System::LibraryLoader::GetModuleHandleA, Win32::UI::WindowsAndMessaging::*,
 };
-
+use crate::vm::interrupt;
 
 lazy_static! {
 	pub static ref WINFRAMEWORKDATA: Mutex<WinFrameworkData> = Mutex::new(WinFrameworkData {
@@ -76,7 +76,7 @@ pub fn call(vm: &VM, function_info: &FunctionInfo_Blit)
         println!("Create new window: {}", on_paint_inmodule_index);
 
         create_window(on_paint_inmodule_index);
-        
+
         println!("Window created")
     }
     else
@@ -89,7 +89,7 @@ pub fn call(vm: &VM, function_info: &FunctionInfo_Blit)
 fn create_window(on_paint_inmodule_index: i32)
 {
     thread::spawn(move || unsafe {
-        
+
         let instance = GetModuleHandleA(None).unwrap();
         let window_class = s!("window");
 
@@ -121,7 +121,7 @@ fn create_window(on_paint_inmodule_index: i32)
             None,
             None,
         );
-        
+
         let window = Window
         {
             id: hwnd.0 as i32,
@@ -136,7 +136,7 @@ fn create_window(on_paint_inmodule_index: i32)
 
         while GetMessageA(&mut message, None, 0, 0).into() {
             DispatchMessageA(&message);
-        } 
+        }
     });
 }
 
@@ -145,14 +145,22 @@ extern "system" fn wndproc(window_hwnd: HWND, message: u32, wparam: WPARAM, lpar
         // println!("wndproc: {}", message);
         match message {
             WM_PAINT => {
-                
+
                 let data = WINFRAMEWORKDATA.lock().unwrap();
-                
                 let window = data.windows.get(&(window_hwnd.0 as i32)).expect(format!("There is no window registered for received wndproc HWND = {}", window_hwnd.0).as_str());
-                println!("{}", window.on_paint_inmodule_index);
-            
-            
-            
+                let on_paint_inmodule_index = window.on_paint_inmodule_index;
+
+
+                let vm: &mut VM = data.vm.unwrap().as_mut();
+                let function = &vm.module.table.functions[on_paint_inmodule_index as usize];
+                let new_current = function.pointed_opcode as i32;
+
+                // println!("WM_PAINT");
+
+                interrupt(vm, new_current);
+
+                ValidateRect(window_hwnd, None);
+
                 LRESULT(0)
             },
             // WM_PAINT => {

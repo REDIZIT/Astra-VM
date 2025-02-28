@@ -79,7 +79,7 @@ pub fn vm_start()
         let byte_opcode = vm.byte_code.next();
         
         // let opcode = OpCode::try_from(byte_opcode).expect("Invalid opcode");
-        // println!("{:?}", opcode);
+        // println!("opcode = {:?}", opcode);
 
         functions[byte_opcode as usize](&mut vm);
     }
@@ -88,4 +88,40 @@ pub fn vm_start()
 
     let exit_code = vm.memory.read_int(vm.memory.data_section_size);
     println!("Successful executed in {} ms with exit code {}", w.elapsed_ms(), exit_code);
+}
+
+pub fn interrupt(vm: &mut VM, new_current: i32)
+{
+    // println!("Interrupt {} -> {}", vm.byte_code.current, new_current);
+
+    let prev_current = vm.byte_code.current;
+    let prev_base = vm.memory.base_pointer;
+    let prev_stack = vm.memory.stack_pointer;
+
+    vm.byte_code.current = new_current as usize;
+    vm.memory.base_pointer = vm.memory.stack_pointer;
+
+
+    let functions = get_functions();
+
+    while vm.byte_code.can_next()
+    {
+        let byte_opcode = vm.byte_code.next();
+        functions[byte_opcode as usize](vm);
+        
+        // println!("current base = {}, current stack = {}, prev_base = {}, prev_stack = {}", vm.memory.base_pointer, vm.memory.stack_pointer, prev_base, prev_stack);
+
+        if vm.memory.stack_pointer == prev_stack
+        {
+            // println!("Interrupt done");
+
+            vm.byte_code.current = prev_current;
+            vm.memory.base_pointer = prev_base;
+            vm.memory.stack_pointer = prev_stack;
+
+            return;
+        }
+    }
+
+    panic!("Interrupt have reached the end of byte code.")
 }
