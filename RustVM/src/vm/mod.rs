@@ -9,6 +9,7 @@ mod winframework;
 use std::env;
 use std::fs::File;
 use std::io::Read;
+use std::sync::{Arc, Mutex};
 use num_enum::TryFromPrimitive;
 use paste::paste;
 use stopwatch::Stopwatch;
@@ -55,14 +56,16 @@ pub fn vm_start()
 
     let functions = get_functions();
 
-    let mut byte_code = BinaryFile::new(&module.managed_code.bytes);
+    let byte_code = BinaryFile::new(&module.managed_code.bytes);
     let mut total_opcodes_completed = 0;
 
     let mut vm = VM {
-        byte_code: &mut byte_code,
+        byte_code: Box::from(byte_code),
         memory: Memory::new(),
-        module: &module
+        module: Box::from(module)
     };
+    
+    winframework::set_vm(&mut vm);
 
     let mut w = Stopwatch::start_new();
 

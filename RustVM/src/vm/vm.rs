@@ -2,14 +2,14 @@
 use crate::vm::compiled_module::CompiledModule;
 use crate::vm::memory::Memory;
 
-pub struct VM<'a>
+pub struct VM
 {
-    pub byte_code: &'a mut BinaryFile,
+    pub byte_code: Box<BinaryFile>,
     pub memory: Memory,
-    pub module: &'a CompiledModule,
+    pub module: Box<CompiledModule>,
 }
 
-impl VM<'_>
+impl VM
 {
     pub fn next_address(&mut self) -> i32
     {

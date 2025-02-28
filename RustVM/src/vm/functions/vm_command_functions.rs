@@ -3,6 +3,7 @@ use std::thread;
 use std::time::Duration;
 use crate::vm::opcodes::VMCommand_Cmd;
 use crate::vm::vm::VM;
+use crate::vm::winframework::WINFRAMEWORKDATA;
 
 pub fn vm_command(vm: &mut VM)
 {
