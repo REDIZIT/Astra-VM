@@ -9,17 +9,13 @@ mod winframework;
 use std::env;
 use std::fs::File;
 use std::io::Read;
-use std::sync::{Arc, Mutex};
 use num_enum::TryFromPrimitive;
-use paste::paste;
 use stopwatch::Stopwatch;
 use binary_file::BinaryFile;
 use compiled_module::deserialize_module_from_bytes;
 use functions::get_functions;
 use memory::Memory;
 use vm::VM;
-use crate::vm::opcodes::OpCode;
-
 #[macro_export] macro_rules! debug_log {
     ($($arg:tt)*) => {
 		// #[cfg(debug_assertions)]
